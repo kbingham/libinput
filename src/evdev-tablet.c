@@ -1030,6 +1030,9 @@ static struct evdev_dispatch_interface tablet_interface = {
 	NULL, /* device_suspended */
 	NULL, /* device_resumed */
 	tablet_check_initial_proximity,
+	NULL, /* buttonset_to_phys */
+	NULL, /* buttonset_get_num_axes */
+	NULL, /* buttonset_get_axis_type */
 };
 
 static int

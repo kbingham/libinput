@@ -253,6 +253,16 @@ normalize_delta(struct evdev_device *device,
 	normalized->y = delta->y * DEFAULT_MOUSE_DPI / (double)device->dpi;
 }
 
+double
+evdev_device_buttonset_transform_to_phys(struct evdev_device *device,
+					 unsigned int axis,
+					 double value)
+{
+	struct evdev_dispatch *dispatch = device->dispatch;
+
+	return dispatch->interface->buttonset_to_phys(device, axis, value);
+}
+
 static void
 evdev_flush_pending_event(struct evdev_device *device, uint64_t time)
 {
@@ -902,6 +912,9 @@ struct evdev_dispatch_interface fallback_interface = {
 	NULL, /* device_suspended */
 	NULL, /* device_resumed */
 	NULL, /* post_added */
+	NULL, /* buttonset_to_phys */
+	NULL, /* buttonset_get_num_axes */
+	NULL, /* buttonset_get_axis_type */
 };
 
 static uint32_t
@@ -2271,6 +2284,8 @@ evdev_device_has_capability(struct evdev_device *device,
 		return !!(device->seat_caps & EVDEV_DEVICE_TOUCH);
 	case LIBINPUT_DEVICE_CAP_TABLET:
 		return !!(device->seat_caps & EVDEV_DEVICE_TABLET);
+	case LIBINPUT_DEVICE_CAP_BUTTONSET:
+		return !!(device->seat_caps & EVDEV_DEVICE_BUTTONSET);
 	default:
 		return 0;
 	}
@@ -2312,6 +2327,39 @@ evdev_device_has_key(struct evdev_device *device, uint32_t code)
 		return -1;
 
 	return libevdev_has_event_code(device->evdev, EV_KEY, code);
+}
+
+int
+evdev_device_buttonset_has_button(struct evdev_device *device,
+				  uint32_t code)
+{
+	if (!(device->seat_caps & EVDEV_DEVICE_BUTTONSET))
+		return -1;
+
+	return libevdev_has_event_code(device->evdev, EV_KEY, code);
+}
+
+unsigned int
+evdev_device_buttonset_get_num_axes(struct evdev_device *device)
+{
+	struct evdev_dispatch *dispatch = device->dispatch;
+
+	if (!(device->seat_caps & EVDEV_DEVICE_BUTTONSET))
+		return 0;
+
+	return dispatch->interface->buttonset_get_num_axes(device);
+}
+
+enum libinput_buttonset_axis_type
+evdev_device_buttonset_get_axis_type(struct evdev_device *device,
+				     unsigned int axis)
+{
+	struct evdev_dispatch *dispatch = device->dispatch;
+
+	if (!(device->seat_caps & EVDEV_DEVICE_BUTTONSET))
+		return LIBINPUT_BUTTONSET_AXIS_NONE;
+
+	return dispatch->interface->buttonset_get_axis_type(device, axis);
 }
 
 static inline bool

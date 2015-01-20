@@ -169,3 +169,21 @@ LIBINPUT_TABLET_SUPPORT {
 	libinput_tool_set_user_data;
 	libinput_tool_unref;
 } LIBINPUT_0.15.0;
+
+BUTTONSET_INTERFACE {
+	libinput_device_buttonset_has_button;
+	libinput_device_buttonset_get_axis_type;
+	libinput_device_buttonset_get_num_axes;
+	libinput_event_buttonset_get_axis_delta;
+	libinput_event_buttonset_get_axis_delta_discrete;
+	libinput_event_buttonset_get_axis_source;
+	libinput_event_buttonset_get_axis_value;
+	libinput_event_buttonset_get_axis_value_transformed;
+	libinput_event_buttonset_get_base_event;
+	libinput_event_buttonset_get_button;
+	libinput_event_buttonset_get_button_state;
+	libinput_event_buttonset_get_seat_button_count;
+	libinput_event_buttonset_get_time;
+	libinput_event_buttonset_axis_has_changed;
+	libinput_event_get_buttonset_event;
+} LIBINPUT_TABLET_SUPPORT;

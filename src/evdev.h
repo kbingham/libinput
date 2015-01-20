@@ -64,6 +64,7 @@ enum evdev_device_seat_capability {
 	EVDEV_DEVICE_KEYBOARD = (1 << 1),
 	EVDEV_DEVICE_TOUCH = (1 << 2),
 	EVDEV_DEVICE_TABLET = (1 << 3),
+	EVDEV_DEVICE_BUTTONSET = (1 << 4),
 };
 
 enum evdev_device_tags {
@@ -266,6 +267,19 @@ struct evdev_dispatch_interface {
 	 * was sent */
 	void (*post_added)(struct evdev_device *device,
 			   struct evdev_dispatch *dispatch);
+
+        /* Transform axis value to physical dimension */
+	double (*buttonset_to_phys)(struct evdev_device *device,
+				    unsigned int axis,
+				    double value);
+
+	/* Return the number of axes on the buttonset device */
+	unsigned int (*buttonset_get_num_axes)(struct evdev_device *device);
+
+	/* Return the axis type of the given axes on the buttonset device */
+	enum libinput_buttonset_axis_type (*buttonset_get_axis_type)(
+					     struct evdev_device *device,
+					     unsigned int axis);
 };
 
 struct evdev_dispatch {
@@ -351,6 +365,15 @@ evdev_device_has_button(struct evdev_device *device, uint32_t code);
 
 int
 evdev_device_has_key(struct evdev_device *device, uint32_t code);
+int
+evdev_device_buttonset_has_button(struct evdev_device *device,
+				  uint32_t code);
+
+enum libinput_buttonset_axis_type
+evdev_device_buttonset_get_axis_type(struct evdev_device *device,
+				     unsigned int axis);
+unsigned int
+evdev_device_buttonset_get_num_axes(struct evdev_device *device);
 
 double
 evdev_device_transform_x(struct evdev_device *device,
@@ -361,6 +384,11 @@ double
 evdev_device_transform_y(struct evdev_device *device,
 			 double y,
 			 uint32_t height);
+double
+evdev_device_buttonset_transform_to_phys(struct evdev_device *device,
+					 unsigned int axis,
+					 double value);
+
 int
 evdev_device_suspend(struct evdev_device *device);
 

@@ -56,7 +56,8 @@ enum libinput_device_capability {
 	LIBINPUT_DEVICE_CAP_KEYBOARD = 0,
 	LIBINPUT_DEVICE_CAP_POINTER = 1,
 	LIBINPUT_DEVICE_CAP_TOUCH = 2,
-	LIBINPUT_DEVICE_CAP_TABLET = 3
+	LIBINPUT_DEVICE_CAP_TABLET = 3,
+	LIBINPUT_DEVICE_CAP_BUTTONSET = 4
 };
 
 /**
@@ -147,6 +148,43 @@ enum libinput_tablet_axis {
 	LIBINPUT_TABLET_AXIS_ROTATION_Z = 7,
 	LIBINPUT_TABLET_AXIS_SLIDER = 8,
 	LIBINPUT_TABLET_AXIS_REL_WHEEL = 9,
+};
+
+/**
+ * @ingroup device
+ *
+ * Available axis types for a buttonset device. It must have the @ref
+ * LIBINPUT_DEVICE_CAP_BUTTONSET capability. A device may have more than one
+ * axis of the same type, e.g. a Wacom Cintiq 24HD has two ring axes.
+ */
+enum libinput_buttonset_axis_type {
+	LIBINPUT_BUTTONSET_AXIS_NONE,
+	LIBINPUT_BUTTONSET_AXIS_X,
+	LIBINPUT_BUTTONSET_AXIS_Y,
+	LIBINPUT_BUTTONSET_AXIS_Z,
+	LIBINPUT_BUTTONSET_AXIS_REL_X,
+	LIBINPUT_BUTTONSET_AXIS_REL_Y,
+	LIBINPUT_BUTTONSET_AXIS_REL_Z,
+	LIBINPUT_BUTTONSET_AXIS_ROTATION_X,
+	LIBINPUT_BUTTONSET_AXIS_ROTATION_Y,
+	LIBINPUT_BUTTONSET_AXIS_ROTATION_Z,
+	LIBINPUT_BUTTONSET_AXIS_RING,
+	LIBINPUT_BUTTONSET_AXIS_STRIP,
+};
+
+/**
+ * @ingroup device
+ *
+ * The source for a libinput_buttonset_axis event. See
+ * libinput_event_buttonset_get_axis_source() for details.
+ */
+enum libinput_buttonset_axis_source {
+	LIBINPUT_BUTTONSET_AXIS_SOURCE_UNKNOWN = 1,
+	/**
+	 * The event is caused by the movement of one or more fingers on a
+	 * device.
+	 */
+	LIBINPUT_BUTTONSET_AXIS_SOURCE_FINGER,
 };
 
 /**
@@ -271,7 +309,10 @@ enum libinput_event_type {
 	 * initial proximity out event.
 	 */
 	LIBINPUT_EVENT_TABLET_PROXIMITY,
-	LIBINPUT_EVENT_TABLET_BUTTON
+	LIBINPUT_EVENT_TABLET_BUTTON,
+
+	LIBINPUT_EVENT_BUTTONSET_AXIS = 700,
+	LIBINPUT_EVENT_BUTTONSET_BUTTON,
 };
 
 /**
@@ -369,6 +410,16 @@ struct libinput_event_touch;
  * LIBINPUT_EVENT_TABLET_PROXIMITY and @ref LIBINPUT_EVENT_TABLET_BUTTON.
  */
 struct libinput_event_tablet;
+
+/**
+ * @ingroup event_buttonset
+ * @struct libinput_event_buttonset
+ *
+ * Event representing a button press/release or axis update on a buttonset
+ * device. Valid event types for this event are @ref
+ * LIBINPUT_EVENT_BUTTONSET_AXIS and @ref LIBINPUT_EVENT_BUTTONSET_BUTTON.
+ */
+struct libinput_event_buttonset;
 
 /**
  * @defgroup event Accessing and destruction of events
@@ -491,6 +542,19 @@ libinput_event_get_tablet_event(struct libinput_event *event);
  */
 struct libinput_event_device_notify *
 libinput_event_get_device_notify_event(struct libinput_event *event);
+
+/**
+ * @ingroup event
+ *
+ * Return the buttonset event that is this input event. If the event type
+ * does not match the buttonset event types, this function returns NULL.
+ *
+ * The inverse of this function is libinput_event_buttonset_get_base_event().
+ *
+ * @return A buttonset event, or NULL for other events
+ */
+struct libinput_event_buttonset *
+libinput_event_get_buttonset_event(struct libinput_event *event);
 
 /**
  * @ingroup event
@@ -1404,6 +1468,214 @@ libinput_tool_set_user_data(struct libinput_tool *tool,
 			    void *user_data);
 
 /**
+ * @defgroup event_buttonset Events from button devices
+ *
+ * Events that come from button devices. Such devices provide one or more
+ * custom buttons (other than left, middle, right) and usually do not
+ * control the pointer. Axes other than x/y axes may be present on the
+ * device.
+ */
+
+/**
+ * @ingroup event_buttonset
+ *
+ * @return The generic libinput_event of this event
+ */
+struct libinput_event *
+libinput_event_buttonset_get_base_event(struct libinput_event_buttonset *event);
+
+/**
+ * @ingroup event_buttonset
+ *
+ * @return The event time for this event
+ */
+uint32_t
+libinput_event_buttonset_get_time(struct libinput_event_buttonset *event);
+
+/**
+ * @ingroup event_buttonset
+ *
+ * Checks if an axis was updated in this event or return 0 otherwise.
+ * For buttonset events that are not of type @ref LIBINPUT_EVENT_BUTTONSET_AXIS,
+ * this function returns 0.
+ *
+ * @note It is an application bug to call this function for events other than
+ * @ref LIBINPUT_EVENT_BUTTONSET_AXIS.
+ *
+ * @param event The libinput buttonset event
+ * @param axis The axis to check for updates
+ * @return 1 if the axis was updated or 0 otherwise
+ */
+int
+libinput_event_buttonset_axis_has_changed(struct libinput_event_buttonset *event,
+					  unsigned int axis);
+
+/**
+ * @ingroup event_buttonset
+ *
+ * Return the axis value of a given axis for a buttonset. The interpretation
+ * of the value is dependent on the axis:
+ * - @ref LIBINPUT_BUTTONSET_AXIS_X, @ref LIBINPUT_BUTTONSET_AXIS_Y, @ref
+ *   LIBINPUT_BUTTONSET_AXIS_Z - the current value, in mm, of the x, y, or
+ *   z axis on this device in it's current logical rotation.
+ * - @ref LIBINPUT_BUTTONSET_AXIS_REL_X, @ref LIBINPUT_BUTTONSET_AXIS_REL_Y,
+ *   @ref LIBINPUT_BUTTONSET_AXIS_REL_Z - always returns zero. Use
+ *   libinput_event_buttonset_get_axis_delta() instead.
+ * - @ref LIBINPUT_BUTTONSET_AXIS_ROTATION_X, @ref
+ *   LIBINPUT_BUTTONSET_AXIS_ROTATION_Y, @ref
+ *   LIBINPUT_BUTTONSET_AXIS_ROTATION_Z - the device's rotation in degrees.
+ *   z axis on this device in it's current logical rotation.
+ * - @ref LIBINPUT_BUTTONSET_AXIS_RING - the absolute value of a ring,
+ *   in degrees clockwise, 0 is the ring's northernmost point in the
+ *   device's current logical rotation.
+ *   If the axis source is @ref LIBINPUT_BUTTONSET_AXIS_SOURCE_FINGER,
+ *   libinput will send an event with a value of -1 when the finger is
+ *   lifted.
+ * - @ref LIBINPUT_BUTTONSET_AXIS_STRIP - normalized to a range [0, 1]
+ *   where 0 is the strips top/left-most point in the device's current
+ *   logical rotation.
+ *   If the axis source is @ref LIBINPUT_BUTTONSET_AXIS_SOURCE_FINGER,
+ *   libinput will send an event with a value of -1 when the finger is
+ *   lifted.
+ *
+ * @note This function may be called for a specific axis even if
+ * libinput_event_buttonset_axis_has_changed() returns 0 for that axis.
+ * libinput always includes all device axes in the event.
+ *
+ * @param event The libinput buttonset event
+ * @param axis The axis to retrieve the value of
+ * @return The current value of the the axis
+ * @retval -1 The finger was lifted from a ring or strip axis.
+ */
+double
+libinput_event_buttonset_get_axis_value(struct libinput_event_buttonset *event,
+					unsigned int axis);
+
+/**
+ * @ingroup event_buttonset
+ *
+ * Return the axis value of the given axis, linearly transformed into the
+ * range [0, max].
+ *
+ * For a detailed explanation of the value, see
+ * libinput_event_buttonset_get_axis_value().
+ *
+ * @param event The libinput buttonset event
+ * @param axis The axis to retrieve the value of
+ * @param max The upper value of the range to convert to (inclusive)
+ * @return The current value of the the axis, transformed into [0, max]
+ */
+double
+libinput_event_buttonset_get_axis_value_transformed(struct libinput_event_buttonset *event,
+						    unsigned int axis,
+						    uint32_t max);
+/**
+ * @ingroup event_buttonset
+ *
+ * Return the axis delta of a given axis for a buttonset in physical
+ * dimensions, relative to the previous event. The interpretation
+ * of the value is dependent on the axis:
+ * - @ref LIBINPUT_BUTTONSET_AXIS_REL_X, @ref LIBINPUT_BUTTONSET_AXIS_REL_Y,
+ *   @ref LIBINPUT_BUTTONSET_AXIS_REL_Z - relative movement, normalized to
+ *   that of a 1000dpi mouse.
+ * For all other axes, see libinput_event_buttonset_get_axis_value() for
+ * details on the various axes.
+ *
+ * @param event The libinput buttonset event
+ * @param axis The axis to retrieve the value of
+ * @return The axis delta to the last last event in discrete steps
+ */
+double
+libinput_event_buttonset_get_axis_delta(struct libinput_event_buttonset *event,
+				        unsigned int axis);
+
+/**
+ * @ingroup event_buttonset
+ * Return the axis delta of a given axis for a buttonset in discrete steps,
+ * relative to the previous event.
+ * How an axis value translates into a discrete steps depends on the device.
+ *
+ * @param event The libinput buttonset event
+ * @param axis The axis to retrieve the value of
+ * @return The axis delta to the last last event in discrete steps
+ */
+double
+libinput_event_buttonset_get_axis_delta_discrete(struct libinput_event_buttonset *event,
+						 unsigned int axis);
+
+/**
+ * @ingroup event_buttonset
+ *
+ * Return the source for a given buttonset axis.
+ *
+ * If the source is @ref LIBINPUT_BUTTONSET_AXIS_SOURCE_FINGER, libinput
+ * guarantees that a sequence is terminated with an out-of-range value (see
+ * libinput_event_buttonset_get_axis_value() for details).
+ * A caller may use this information to decide on whether kinetic motion
+ * should be triggered on this event sequence.
+ *
+ * If the source is @ref LIBINPUT_BUTTONSET_AXIS_SOURCE_UNKNOWN, libinput
+ * does not send a terminating value to indicate release.
+ *
+ * For buttonset events that are not of type @ref LIBINPUT_EVENT_BUTTONSET_AXIS,
+ * this function returns 0. For axes not present in this event, this
+ * function returns 0.
+ *
+ * @note It is an application bug to call this function for events other than
+ * @ref LIBINPUT_EVENT_BUTTONSET_AXIS or for axes not present in this event.
+ *
+ * @return the source for this buttonset axis event
+ */
+enum libinput_buttonset_axis_source
+libinput_event_buttonset_get_axis_source(struct libinput_event_buttonset *event,
+					 unsigned int axis);
+
+/**
+ * @ingroup event_buttonset
+ *
+ * Return the button that triggered this event.
+ * For buttonset events that are not of type @ref LIBINPUT_EVENT_BUTTONSET_BUTTON, this
+ * function returns 0.
+ *
+ * @note It is an application bug to call this function for events other than
+ * @ref LIBINPUT_EVENT_BUTTONSET_BUTTON.
+ *
+ * @param event The libinput buttonset event
+ * @return the button triggering this event
+ */
+uint32_t
+libinput_event_buttonset_get_button(struct libinput_event_buttonset *event);
+
+/**
+ * @ingroup event_buttonset
+ *
+ * Return the button state of the event.
+ *
+ * @note It is an application bug to call this function for events other than
+ * @ref LIBINPUT_EVENT_BUTTONSET_BUTTON.
+ *
+ * @param event The libinput buttonset event
+ * @return the button state triggering this event
+ */
+enum libinput_button_state
+libinput_event_buttonset_get_button_state(struct libinput_event_buttonset *event);
+
+/**
+ * @ingroup event_buttonset
+ *
+ * For the button of a @ref LIBINPUT_EVENT_BUTTONSET_BUTTON event, return the total
+ * number of buttons pressed on all devices on the associated seat after the
+ * the event was triggered.
+ *
+ " @note It is an application bug to call this function for events other than
+ * @ref LIBINPUT_EVENT_BUTTONSET_BUTTON. For other events, this function returns 0.
+ *
+ * @return the seat wide pressed button count for the key of this event
+ */
+uint32_t
+libinput_event_buttonset_get_seat_button_count(struct libinput_event_buttonset *event);
+
+/**
  * @defgroup base Initialization and manipulation of libinput contexts
  */
 
@@ -2208,6 +2480,69 @@ libinput_device_pointer_has_button(struct libinput_device *device, uint32_t code
 int
 libinput_device_keyboard_has_key(struct libinput_device *device,
 				 uint32_t code);
+
+/**
+ * Check if a @ref LIBINPUT_DEVICE_CAP_BUTTONSET device has a button with
+ * the given code (see linux/input.h).
+ *
+ * @param device A current input device
+ * @param code button code to check for
+ *
+ * @return 1 if the device supports this button code, 0 if it does not, -1
+ * on error.
+ *
+ * @see @ref buttonset_buttons
+ */
+int
+libinput_device_buttonset_has_button(struct libinput_device *device,
+				     uint32_t code);
+
+/**
+ * @ingroup device
+ *
+ * Return the number of axes on this @ref LIBINPUT_DEVICE_CAP_BUTTONSET
+ * device.
+ *
+ * If the device does not have the @ref LIBINPUT_DEVICE_CAP_BUTTONSET
+ * capability, this function returns zero.
+ *
+ * @note: axis numbers are not stable, see @ref buttonset_axes for details.
+ *
+ * @note It is an application bug to call this function on a device
+ * without the @ref LIBINPUT_DEVICE_CAP_BUTTONSET capability.
+ *
+ * @param device A current input device
+ *
+ * @return The number of axes on this device or zero.
+ */
+unsigned int
+libinput_device_buttonset_get_num_axes(struct libinput_device *device);
+
+/**
+ * @ingroup device
+ *
+ * Return the axis type for the given axis on this @ref
+ * LIBINPUT_DEVICE_CAP_BUTTONSET device.
+ *
+ * If the device does not have the @ref LIBINPUT_DEVICE_CAP_BUTTONSET
+ * capability or the axis does not exist on this device, this function
+ * returns zero.
+ *
+ * @note It is an application bug to call this function on a device
+ * without the @ref LIBINPUT_DEVICE_CAP_BUTTONSET capability or for an axis
+ * that does not exist.
+ *
+ * @param device A current input device
+ * @param axis The axis to retrieve the type of
+ *
+ * @return The axis type for the given axis or
+ * @ref LIBINPUT_BUTTONSET_AXIS_NONE if the axis does not exist
+ *
+ * @see libinput_device_buttonset_get_num_axes
+ */
+enum libinput_buttonset_axis_type
+libinput_device_buttonset_get_axis_type(struct libinput_device *device,
+					unsigned int axis);
 
 /**
  * @ingroup device
