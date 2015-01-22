@@ -469,6 +469,10 @@ handle_event_libinput(GIOChannel *source, GIOCondition condition, gpointer data)
 				return FALSE;
 			}
 			break;
+		case LIBINPUT_EVENT_GESTURE_SWIPE_START:
+		case LIBINPUT_EVENT_GESTURE_SWIPE_UPDATE:
+		case LIBINPUT_EVENT_GESTURE_SWIPE_END:
+			break;
 		}
 
 		libinput_event_destroy(ev);
