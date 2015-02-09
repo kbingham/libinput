@@ -1859,14 +1859,6 @@ evdev_configure_device(struct evdev_device *device)
 		return -1;
 	}
 
-	/* libwacom assigns tablet _and_ tablet_pad to the pad devices */
-	if (udev_tags & EVDEV_UDEV_TAG_BUTTONSET) {
-		log_info(libinput,
-			 "input device '%s', %s is a buttonset, ignoring\n",
-			 device->devname, devnode);
-		return -1;
-	}
-
 	if (evdev_reject_device(device) == -1) {
 		log_info(libinput,
 			 "input device '%s', %s was rejected.\n",
@@ -1896,13 +1888,23 @@ evdev_configure_device(struct evdev_device *device)
 		}
 	}
 
-	/* libwacom assigns touchpad (or touchscreen) _and_ tablet to the
-	   tablet touch bits, so make sure we don't initialize the tablet
-	   interface for the touch device */
 	tablet_tags = EVDEV_UDEV_TAG_TABLET |
 		      EVDEV_UDEV_TAG_TOUCHPAD |
 		      EVDEV_UDEV_TAG_TOUCHSCREEN;
-	if ((udev_tags & tablet_tags) == EVDEV_UDEV_TAG_TABLET) {
+
+	/* libwacom assigns tablet _and_ tablet_pad to the pad devices */
+	if (udev_tags & EVDEV_UDEV_TAG_BUTTONSET) {
+		device->dispatch = evdev_buttonset_create(device);
+		device->seat_caps |= EVDEV_DEVICE_BUTTONSET;
+		log_info(libinput,
+			 "input device '%s', %s is a buttonset\n",
+			 device->devname, devnode);
+		return device->dispatch == NULL ? -1 : 0;
+
+	/* libwacom assigns touchpad _and_ tablet to the tablet touch bits,
+	   so make sure we don't initialize the tablet interface for the
+	   touch device */
+	} else if ((udev_tags & tablet_tags) == EVDEV_UDEV_TAG_TABLET) {
 		device->dispatch = evdev_tablet_create(device);
 		device->seat_caps |= EVDEV_DEVICE_TABLET;
 		log_info(libinput,
