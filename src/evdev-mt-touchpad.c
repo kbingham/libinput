@@ -763,7 +763,7 @@ tp_post_events(struct tp_dispatch *tp, uint64_t time)
 	    tp->sendevents.trackpoint_active ||
 	    tp->dwt.keyboard_active) {
 		tp_edge_scroll_stop_events(tp, time);
-		tp_gesture_stop(tp, time);
+		tp_gesture_stop(tp, time, 1);
 		return;
 	}
 
@@ -941,7 +941,7 @@ tp_trackpoint_event(uint64_t time, struct libinput_event *event, void *data)
 
 	if (!tp->sendevents.trackpoint_active) {
 		tp_edge_scroll_stop_events(tp, time);
-		tp_gesture_stop(tp, time);
+		tp_gesture_stop(tp, time, 1);
 		tp_tap_suspend(tp, time);
 		tp->sendevents.trackpoint_active = true;
 	}
@@ -1017,7 +1017,7 @@ tp_keyboard_event(uint64_t time, struct libinput_event *event, void *data)
 
 	if (!tp->dwt.keyboard_active) {
 		tp_edge_scroll_stop_events(tp, time);
-		tp_gesture_stop(tp, time);
+		tp_gesture_stop(tp, time, 1);
 		tp_tap_suspend(tp, time);
 		tp->dwt.keyboard_active = true;
 		timeout = DEFAULT_KEYBOARD_ACTIVITY_TIMEOUT_1;
