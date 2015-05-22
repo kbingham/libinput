@@ -763,7 +763,9 @@ libinput_event_gesture_get_scale(struct libinput_event_gesture *event)
 	require_event_type(libinput_event_get_context(&event->base),
 			   event->base.type,
 			   0.0,
-			   LIBINPUT_EVENT_GESTURE_PINCH_UPDATE);
+			   LIBINPUT_EVENT_GESTURE_PINCH_START,
+			   LIBINPUT_EVENT_GESTURE_PINCH_UPDATE,
+			   LIBINPUT_EVENT_GESTURE_PINCH_END);
 
 	return event->scale;
 }
@@ -1561,12 +1563,13 @@ gesture_notify_pinch(struct libinput_device *device,
 void
 gesture_notify_pinch_end(struct libinput_device *device,
 			 uint64_t time,
+			 double scale,
 			 int cancelled)
 {
 	const struct normalized_coords zero = { 0.0, 0.0 };
 
 	gesture_notify(device, time, LIBINPUT_EVENT_GESTURE_PINCH_END,
-		       2, cancelled, &zero, &zero, 0.0, 0.0);
+		       2, cancelled, &zero, &zero, scale, 0.0);
 }
 
 static void
