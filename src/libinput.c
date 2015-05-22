@@ -666,30 +666,68 @@ libinput_event_touch_get_y(struct libinput_event_touch *event)
 LIBINPUT_EXPORT uint32_t
 libinput_event_gesture_get_time(struct libinput_event_gesture *event)
 {
+	require_event_type(libinput_event_get_context(&event->base),
+			   event->base.type,
+			   0,
+			   LIBINPUT_EVENT_GESTURE_PINCH_START,
+			   LIBINPUT_EVENT_GESTURE_PINCH_UPDATE,
+			   LIBINPUT_EVENT_GESTURE_PINCH_END,
+			   LIBINPUT_EVENT_GESTURE_SWIPE_START,
+			   LIBINPUT_EVENT_GESTURE_SWIPE_UPDATE,
+			   LIBINPUT_EVENT_GESTURE_SWIPE_END);
+
 	return event->time;
 }
 
 LIBINPUT_EXPORT int
 libinput_event_gesture_get_finger_count(struct libinput_event_gesture *event)
 {
+	require_event_type(libinput_event_get_context(&event->base),
+			   event->base.type,
+			   0,
+			   LIBINPUT_EVENT_GESTURE_PINCH_START,
+			   LIBINPUT_EVENT_GESTURE_PINCH_UPDATE,
+			   LIBINPUT_EVENT_GESTURE_PINCH_END,
+			   LIBINPUT_EVENT_GESTURE_SWIPE_START,
+			   LIBINPUT_EVENT_GESTURE_SWIPE_UPDATE,
+			   LIBINPUT_EVENT_GESTURE_SWIPE_END);
+
 	return event->finger_count;
 }
 
 LIBINPUT_EXPORT int
 libinput_event_gesture_get_cancelled(struct libinput_event_gesture *event)
 {
+	require_event_type(libinput_event_get_context(&event->base),
+			   event->base.type,
+			   0,
+			   LIBINPUT_EVENT_GESTURE_PINCH_END,
+			   LIBINPUT_EVENT_GESTURE_SWIPE_END);
+
 	return event->cancelled;
 }
 
 LIBINPUT_EXPORT double
 libinput_event_gesture_get_dx(struct libinput_event_gesture *event)
 {
+	require_event_type(libinput_event_get_context(&event->base),
+			   event->base.type,
+			   0.0,
+			   LIBINPUT_EVENT_GESTURE_PINCH_UPDATE,
+			   LIBINPUT_EVENT_GESTURE_SWIPE_UPDATE);
+
 	return event->delta.x;
 }
 
 LIBINPUT_EXPORT double
 libinput_event_gesture_get_dy(struct libinput_event_gesture *event)
 {
+	require_event_type(libinput_event_get_context(&event->base),
+			   event->base.type,
+			   0.0,
+			   LIBINPUT_EVENT_GESTURE_PINCH_UPDATE,
+			   LIBINPUT_EVENT_GESTURE_SWIPE_UPDATE);
+
 	return event->delta.y;
 }
 
@@ -697,6 +735,12 @@ LIBINPUT_EXPORT double
 libinput_event_gesture_get_dx_unaccelerated(
 	struct libinput_event_gesture *event)
 {
+	require_event_type(libinput_event_get_context(&event->base),
+			   event->base.type,
+			   0.0,
+			   LIBINPUT_EVENT_GESTURE_PINCH_UPDATE,
+			   LIBINPUT_EVENT_GESTURE_SWIPE_UPDATE);
+
 	return event->delta_unaccel.x;
 }
 
@@ -704,18 +748,34 @@ LIBINPUT_EXPORT double
 libinput_event_gesture_get_dy_unaccelerated(
 	struct libinput_event_gesture *event)
 {
+	require_event_type(libinput_event_get_context(&event->base),
+			   event->base.type,
+			   0.0,
+			   LIBINPUT_EVENT_GESTURE_PINCH_UPDATE,
+			   LIBINPUT_EVENT_GESTURE_SWIPE_UPDATE);
+
 	return event->delta_unaccel.y;
 }
 
 LIBINPUT_EXPORT double
 libinput_event_gesture_get_scale(struct libinput_event_gesture *event)
 {
+	require_event_type(libinput_event_get_context(&event->base),
+			   event->base.type,
+			   0.0,
+			   LIBINPUT_EVENT_GESTURE_PINCH_UPDATE);
+
 	return event->scale;
 }
 
 LIBINPUT_EXPORT double
 libinput_event_gesture_get_angle(struct libinput_event_gesture *event)
 {
+	require_event_type(libinput_event_get_context(&event->base),
+			   event->base.type,
+			   0.0,
+			   LIBINPUT_EVENT_GESTURE_PINCH_UPDATE);
+
 	return event->angle;
 }
 
