@@ -31,32 +31,30 @@
 #define buttonset_unset_status(buttonset_,s_) (buttonset_)->status &= ~(s_)
 #define buttonset_has_status(buttonset_,s_) (!!((buttonset_)->status & (s_)))
 
-static unsigned long *
-buttonset_get_pressed_buttons(struct buttonset_dispatch *buttonset)
+static void
+buttonset_get_buttons_pressed(struct buttonset_dispatch *buttonset,
+			      unsigned long buttons_pressed[NLONGS(KEY_CNT)])
 {
 	struct button_state *state = &buttonset->button_state;
 	struct button_state *prev_state = &buttonset->prev_button_state;
 	unsigned int i;
 
 	for (i = 0; i < NLONGS(KEY_CNT); i++)
-		state->buttons_pressed[i] = state->buttons[i]
+		buttons_pressed[i] = state->buttons[i]
 						& ~(prev_state->buttons[i]);
-
-	return state->buttons_pressed;
 }
 
-static unsigned long *
-buttonset_get_released_buttons(struct buttonset_dispatch *buttonset)
+static void
+buttonset_get_buttons_released(struct buttonset_dispatch *buttonset,
+			       unsigned long buttons_released[NLONGS(KEY_CNT)])
 {
 	struct button_state *state = &buttonset->button_state;
 	struct button_state *prev_state = &buttonset->prev_button_state;
 	unsigned int i;
 
 	for (i = 0; i < NLONGS(KEY_CNT); i++)
-		state->buttons_pressed[i] = prev_state->buttons[i]
+		buttons_released[i] = prev_state->buttons[i]
 						& ~(state->buttons[i]);
-
-	return state->buttons_pressed;
 }
 
 static inline bool
@@ -332,12 +330,14 @@ buttonset_notify_buttons(struct buttonset_dispatch *buttonset,
 			 uint32_t time,
 			 enum libinput_button_state state)
 {
-	unsigned long *buttons;
+	unsigned long buttons[NLONGS(KEY_CNT)];
 
 	if (state == LIBINPUT_BUTTON_STATE_PRESSED)
-		buttons = buttonset_get_pressed_buttons(buttonset);
+		buttonset_get_buttons_pressed(buttonset,
+					      buttons);
 	else
-		buttons = buttonset_get_released_buttons(buttonset);
+		buttonset_get_buttons_released(buttonset,
+					       buttons);
 
 	buttonset_notify_button_mask(buttonset,
 				     device,
