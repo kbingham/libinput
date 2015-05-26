@@ -141,6 +141,7 @@ enum litest_device_type {
 	LITEST_WACOM_CINTIQ = -27,
 	LITEST_WACOM_INTUOS = -28,
 	LITEST_WACOM_ISDV4 = -29,
+	LITEST_WACOM_PAD = -30,
 };
 
 enum litest_device_feature {
@@ -165,6 +166,7 @@ enum litest_device_feature {
 	LITEST_TABLET = 1 << 16,
 	LITEST_DISTANCE = 1 << 17,
 	LITEST_TOOL_SERIAL = 1 << 18,
+	LITEST_BUTTONSET = 1 << 19,
 };
 
 struct litest_device {
