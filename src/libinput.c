@@ -920,24 +920,45 @@ libinput_tool_unref(struct libinput_tool *tool)
 LIBINPUT_EXPORT uint32_t
 libinput_event_buttonset_get_time(struct libinput_event_buttonset *event)
 {
+	require_event_type(libinput_event_get_context(&event->base),
+			   event->base.type,
+			   0,
+			   LIBINPUT_EVENT_BUTTONSET_AXIS,
+			   LIBINPUT_EVENT_BUTTONSET_BUTTON);
+
 	return event->time;
 }
 
 LIBINPUT_EXPORT uint32_t
 libinput_event_buttonset_get_button(struct libinput_event_buttonset *event)
 {
+	require_event_type(libinput_event_get_context(&event->base),
+			   event->base.type,
+			   0,
+			   LIBINPUT_EVENT_BUTTONSET_BUTTON);
+
 	return event->button;
 }
 
 LIBINPUT_EXPORT enum libinput_button_state
 libinput_event_buttonset_get_button_state(struct libinput_event_buttonset *event)
 {
+	require_event_type(libinput_event_get_context(&event->base),
+			   event->base.type,
+			   0,
+			   LIBINPUT_EVENT_BUTTONSET_BUTTON);
+
 	return event->state;
 }
 
 LIBINPUT_EXPORT uint32_t
 libinput_event_buttonset_get_seat_button_count(struct libinput_event_buttonset *event)
 {
+	require_event_type(libinput_event_get_context(&event->base),
+			   event->base.type,
+			   0,
+			   LIBINPUT_EVENT_BUTTONSET_BUTTON);
+
 	return event->seat_button_count;
 }
 
@@ -945,6 +966,11 @@ LIBINPUT_EXPORT int
 libinput_event_buttonset_axis_has_changed(struct libinput_event_buttonset *event,
 					  unsigned int axis)
 {
+	require_event_type(libinput_event_get_context(&event->base),
+			   event->base.type,
+			   0,
+			   LIBINPUT_EVENT_BUTTONSET_AXIS);
+
 	return (NCHARS(axis) <= sizeof(event->changed_axes)) ?
 		bit_is_set(event->changed_axes, axis) : 0;
 }
@@ -956,8 +982,10 @@ libinput_event_buttonset_get_axis_value(struct libinput_event_buttonset *event,
 	struct evdev_device *device =
 		(struct evdev_device *) event->base.device;
 
-	if (event->base.type != LIBINPUT_EVENT_BUTTONSET_AXIS)
-		return 0;
+	require_event_type(libinput_event_get_context(&event->base),
+			   event->base.type,
+			   0.0,
+			   LIBINPUT_EVENT_BUTTONSET_AXIS);
 
 	if (axis >= ARRAY_LENGTH(event->axes))
 		return 0;
@@ -972,8 +1000,10 @@ libinput_event_buttonset_get_axis_value_transformed(struct libinput_event_button
 						    unsigned int axis,
 						    uint32_t max)
 {
-	if (event->base.type != LIBINPUT_EVENT_BUTTONSET_AXIS)
-		return 0;
+	require_event_type(libinput_event_get_context(&event->base),
+			   event->base.type,
+			   0.0,
+			   LIBINPUT_EVENT_BUTTONSET_AXIS);
 
 	if (axis >= ARRAY_LENGTH(event->axes))
 		return 0;
@@ -988,8 +1018,10 @@ libinput_event_buttonset_get_axis_delta(struct libinput_event_buttonset *event,
 	struct evdev_device *device =
 		(struct evdev_device *) event->base.device;
 
-	if (event->base.type != LIBINPUT_EVENT_BUTTONSET_AXIS)
-		return 0;
+	require_event_type(libinput_event_get_context(&event->base),
+			   event->base.type,
+			   0.0,
+			   LIBINPUT_EVENT_BUTTONSET_AXIS);
 
 	if (axis >= ARRAY_LENGTH(event->deltas))
 		return 0;
@@ -1003,8 +1035,10 @@ LIBINPUT_EXPORT double
 libinput_event_buttonset_get_axis_delta_discrete(struct libinput_event_buttonset *event,
 						 unsigned int axis)
 {
-	if (event->base.type != LIBINPUT_EVENT_BUTTONSET_AXIS)
-		return 0;
+	require_event_type(libinput_event_get_context(&event->base),
+			   event->base.type,
+			   0.0,
+			   LIBINPUT_EVENT_BUTTONSET_AXIS);
 
 	if (axis >= ARRAY_LENGTH(event->deltas))
 		return 0;
@@ -1016,8 +1050,10 @@ LIBINPUT_EXPORT enum libinput_buttonset_axis_source
 libinput_event_buttonset_get_axis_source(struct libinput_event_buttonset *event,
 					 unsigned int axis)
 {
-	if (event->base.type != LIBINPUT_EVENT_BUTTONSET_AXIS)
-		return 0;
+	require_event_type(libinput_event_get_context(&event->base),
+			   event->base.type,
+			   LIBINPUT_BUTTONSET_AXIS_SOURCE_UNKNOWN,
+			   LIBINPUT_EVENT_BUTTONSET_AXIS);
 
 	if (axis >= ARRAY_LENGTH(event->axes))
 		return 0;
