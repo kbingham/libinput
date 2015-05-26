@@ -413,6 +413,23 @@ buttonset_process(struct evdev_dispatch *dispatch,
 }
 
 static void
+buttonset_suspend(struct evdev_dispatch *dispatch,
+		  struct evdev_device *device)
+{
+	struct buttonset_dispatch *buttonset =
+		(struct buttonset_dispatch *)dispatch;
+	struct libinput *libinput = device->base.seat->libinput;
+	unsigned int code;
+
+	for (code = KEY_ESC; code < KEY_CNT; code++) {
+		if (buttonset_button_is_down(buttonset, code))
+			buttonset_button_set_down(buttonset, code, false);
+	}
+
+	buttonset_flush(buttonset, device, libinput_now(libinput));
+}
+
+static void
 buttonset_destroy(struct evdev_dispatch *dispatch)
 {
 	struct buttonset_dispatch *buttonset =
@@ -475,7 +492,7 @@ buttonset_get_axis_type(struct evdev_device *device, unsigned int axis)
 
 static struct evdev_dispatch_interface buttonset_interface = {
 	buttonset_process,
-	NULL, /* suspend */ /* FIXME: we need to handle this now */
+	buttonset_suspend, /* suspend */
 	NULL, /* remove */
 	buttonset_destroy,
 	NULL, /* device_added */
