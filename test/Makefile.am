@@ -53,6 +53,7 @@ liblitest_la_CFLAGS += $(LIBUNWIND_CFLAGS)
 endif
 
 run_tests = \
+	test-buttonset \
 	test-touchpad \
 	test-touchpad-tap \
 	test-tablet \
@@ -126,6 +127,10 @@ test_keyboard_LDFLAGS = -no-install
 test_device_SOURCES = device.c
 test_device_LDADD = $(TEST_LIBS)
 test_device_LDFLAGS = -no-install
+
+test_buttonset_SOURCES = buttonset.c
+test_buttonset_LDADD = $(TEST_LIBS)
+test_buttonset_LDFLAGS = -no-install
 
 test_litest_selftest_SOURCES = litest-selftest.c litest.c litest-int.h litest.h
 test_litest_selftest_CFLAGS = -DLITEST_DISABLE_BACKTRACE_LOGGING -DLITEST_NO_MAIN $(liblitest_la_CFLAGS)
