@@ -59,6 +59,29 @@ buttonset_get_released_buttons(struct buttonset_dispatch *buttonset)
 	return state->buttons_pressed;
 }
 
+static inline bool
+buttonset_button_is_down(const struct buttonset_dispatch *buttonset,
+			 uint32_t button)
+{
+	return long_bit_is_set(buttonset->button_state.buttons, button);
+}
+
+static inline void
+buttonset_button_set_down(struct buttonset_dispatch *buttonset,
+			  uint32_t button,
+			  bool is_down)
+{
+	struct button_state *state = &buttonset->button_state;
+
+	if (is_down) {
+		long_set_bit(state->buttons, button);
+		buttonset_set_status(buttonset, BUTTONSET_BUTTONS_PRESSED);
+	} else {
+		long_clear_bit(state->buttons, button);
+		buttonset_set_status(buttonset, BUTTONSET_BUTTONS_RELEASED);
+	}
+}
+
 static void
 buttonset_process_absolute(struct buttonset_dispatch *buttonset,
 			   struct evdev_device *device,
@@ -264,15 +287,9 @@ buttonset_process_key(struct buttonset_dispatch *buttonset,
 		      uint32_t time)
 {
 	uint32_t button = e->code;
-	uint32_t enable = e->value;
+	uint32_t is_press = e->value != 0;
 
-	if (enable) {
-		long_set_bit(buttonset->button_state.buttons, button);
-		buttonset_set_status(buttonset, BUTTONSET_BUTTONS_PRESSED);
-	} else {
-		long_clear_bit(buttonset->button_state.buttons, button);
-		buttonset_set_status(buttonset, BUTTONSET_BUTTONS_RELEASED);
-	}
+	buttonset_button_set_down(buttonset, button, is_press);
 }
 
 static void
