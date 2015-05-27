@@ -2069,6 +2069,42 @@ litest_is_motion_event(struct libinput_event *event)
 	return ptrev;
 }
 
+struct libinput_event_buttonset * litest_is_buttonset_button_event(
+		       struct libinput_event *event,
+		       unsigned int button,
+		       enum libinput_button_state state)
+{
+	struct libinput_event_buttonset *bs;
+	enum libinput_event_type type = LIBINPUT_EVENT_BUTTONSET_BUTTON;
+
+	litest_assert(event != NULL);
+	litest_assert_int_eq(libinput_event_get_type(event), type);
+	bs = libinput_event_get_buttonset_event(event);
+
+	litest_assert_int_eq(libinput_event_buttonset_get_button(bs),
+			     button);
+	litest_assert_int_eq(libinput_event_buttonset_get_button_state(bs),
+			     state);
+
+	return bs;
+}
+
+struct libinput_event_buttonset * litest_is_buttonset_axis_event(
+		       struct libinput_event *event,
+		       unsigned int axis)
+{
+	struct libinput_event_buttonset *bs;
+	enum libinput_event_type type = LIBINPUT_EVENT_BUTTONSET_AXIS;
+
+	litest_assert(event != NULL);
+	litest_assert_int_eq(libinput_event_get_type(event), type);
+	bs = libinput_event_get_buttonset_event(event);
+
+	litest_assert(libinput_event_buttonset_axis_has_changed(bs, axis));
+
+	return bs;
+}
+
 void
 litest_assert_button_event(struct libinput *li, unsigned int button,
 			   enum libinput_button_state state)

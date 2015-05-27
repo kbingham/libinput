@@ -374,6 +374,13 @@ struct libinput_event_keyboard * litest_is_keyboard_event(
 		       struct libinput_event *event,
 		       unsigned int key,
 		       enum libinput_key_state state);
+struct libinput_event_buttonset * litest_is_buttonset_button_event(
+		       struct libinput_event *event,
+		       unsigned int button,
+		       enum libinput_button_state state);
+struct libinput_event_buttonset * litest_is_buttonset_axis_event(
+		       struct libinput_event *event,
+		       unsigned int axis);
 void litest_assert_button_event(struct libinput *li,
 				unsigned int button,
 				enum libinput_button_state state);
