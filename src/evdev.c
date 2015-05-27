@@ -2314,7 +2314,7 @@ evdev_device_get_size(struct evdev_device *device,
 }
 
 int
-evdev_device_has_button(struct evdev_device *device, uint32_t code)
+evdev_device_pointer_has_button(struct evdev_device *device, uint32_t code)
 {
 	if (!(device->seat_caps & EVDEV_DEVICE_POINTER))
 		return -1;
@@ -2323,7 +2323,7 @@ evdev_device_has_button(struct evdev_device *device, uint32_t code)
 }
 
 int
-evdev_device_has_key(struct evdev_device *device, uint32_t code)
+evdev_device_keyboard_has_key(struct evdev_device *device, uint32_t code)
 {
 	if (!(device->seat_caps & EVDEV_DEVICE_KEYBOARD))
 		return -1;
