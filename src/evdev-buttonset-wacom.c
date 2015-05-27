@@ -128,18 +128,6 @@ buttonset_process_absolute(struct buttonset_dispatch *buttonset,
 	}
 }
 
-static void
-buttonset_mark_all_axes_changed(struct buttonset_dispatch *buttonset,
-				struct evdev_device *device)
-{
-	unsigned int a;
-
-	for (a = 0; a < buttonset->naxes; a++)
-		set_bit(buttonset->changed_axes, a);
-
-	buttonset_set_status(buttonset, BUTTONSET_AXES_UPDATED);
-}
-
 static inline double
 normalize_ring(const struct input_absinfo *absinfo)
 {
@@ -553,7 +541,6 @@ buttonset_init(struct buttonset_dispatch *buttonset,
 	}
 
 	buttonset->naxes = naxes;
-	buttonset_mark_all_axes_changed(buttonset, device);
 
 	return 0;
 }
