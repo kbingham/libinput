@@ -1659,17 +1659,79 @@ litest_keyboard_key(struct litest_device *d, unsigned int key, bool is_press)
 	litest_button_click(d, key, is_press);
 }
 
+static inline int
+litest_scale_range(int min, int max, double val)
+{
+	litest_assert_int_ge((int)val, 0);
+	litest_assert_int_le((int)val, 100);
+	return (max - min) * val/100.0 + min;
+}
+
 int
 litest_scale(const struct litest_device *d, unsigned int axis, double val)
 {
 	int min, max;
-	litest_assert_int_ge((int)val, 0);
-	litest_assert_int_le((int)val, 100);
 	litest_assert_int_le(axis, (unsigned int)ABS_Y);
 
 	min = d->interface->min[axis];
 	max = d->interface->max[axis];
-	return (max - min) * val/100.0 + min;
+
+	return litest_scale_range(min, max, val);
+}
+
+static inline int
+auto_assign_buttonset_value(struct litest_device *dev,
+				  struct input_event *ev,
+				  double value)
+{
+	const struct input_absinfo *abs;
+
+	if (ev->value != LITEST_AUTO_ASSIGN ||
+	    ev->type != EV_ABS)
+		return value;
+
+	abs = libevdev_get_abs_info(dev->evdev, ev->code);
+	litest_assert_notnull(abs);
+
+	return litest_scale_range(abs->minimum, abs->maximum, value);
+}
+
+void
+litest_buttonset_ring_start(struct litest_device *d, double value)
+{
+	struct input_event *ev;
+
+	ev = d->interface->buttonset_ring_start_events;
+	while (ev && (int16_t)ev->type != -1 && (int16_t)ev->code != -1) {
+		value = auto_assign_buttonset_value(d, ev, value);
+		litest_event(d, ev->type, ev->code, value);
+		ev++;
+	}
+}
+
+void
+litest_buttonset_ring_change(struct litest_device *d, double value)
+{
+	struct input_event *ev;
+
+	ev = d->interface->buttonset_ring_change_events;
+	while (ev && (int16_t)ev->type != -1 && (int16_t)ev->code != -1) {
+		value = auto_assign_buttonset_value(d, ev, value);
+		litest_event(d, ev->type, ev->code, value);
+		ev++;
+	}
+}
+
+void
+litest_buttonset_ring_end(struct litest_device *d)
+{
+	struct input_event *ev;
+
+	ev = d->interface->buttonset_ring_end_events;
+	while (ev && (int16_t)ev->type != -1 && (int16_t)ev->code != -1) {
+		litest_event(d, ev->type, ev->code, ev->value);
+		ev++;
+	}
 }
 
 void

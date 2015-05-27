@@ -42,9 +42,32 @@ static struct input_event move[] = {
 	{ .type = -1, .code = -1 },
 };
 
+static struct input_event ring_start[] = {
+	{ .type = EV_ABS, .code = ABS_WHEEL, .value = LITEST_AUTO_ASSIGN },
+	{ .type = EV_ABS, .code = ABS_MISC, .value = 15 },
+	{ .type = EV_SYN, .code = SYN_REPORT, .value = 0 },
+	{ .type = -1, .code = -1 },
+} ;
+
+static struct input_event ring_change[] = {
+	{ .type = EV_ABS, .code = ABS_WHEEL, .value = LITEST_AUTO_ASSIGN },
+	{ .type = EV_SYN, .code = SYN_REPORT, .value = 0 },
+	{ .type = -1, .code = -1 },
+} ;
+
+static struct input_event ring_end[] = {
+	{ .type = EV_ABS, .code = ABS_WHEEL, .value = 0 },
+	{ .type = EV_ABS, .code = ABS_MISC, .value = 0 },
+	{ .type = EV_SYN, .code = SYN_REPORT, .value = 0 },
+	{ .type = -1, .code = -1 },
+} ;
+
 static struct litest_device_interface interface = {
 	.touch_down_events = down,
 	.touch_move_events = move,
+	.buttonset_ring_start_events = ring_start,
+	.buttonset_ring_change_events = ring_change,
+	.buttonset_ring_end_events = ring_end,
 };
 
 static struct input_absinfo absinfo[] = {
