@@ -56,6 +56,11 @@ struct buttonset_dispatch {
 	struct button_state prev_button_state;
 
 	bool have_abs_misc_terminator;
+
+	struct {
+		struct libinput_device_config_send_events config;
+		enum libinput_config_send_events_mode current_mode;
+	} sendevents;
 };
 
 #endif

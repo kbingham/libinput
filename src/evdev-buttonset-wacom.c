@@ -545,6 +545,54 @@ buttonset_init(struct buttonset_dispatch *buttonset,
 	return 0;
 }
 
+static uint32_t
+bs_sendevents_get_modes(struct libinput_device *device)
+{
+	return LIBINPUT_CONFIG_SEND_EVENTS_DISABLED;
+}
+
+static enum libinput_config_status
+bs_sendevents_set_mode(struct libinput_device *device,
+		       enum libinput_config_send_events_mode mode)
+{
+	struct evdev_device *evdev = (struct evdev_device*)device;
+	struct buttonset_dispatch *buttonset =
+			(struct buttonset_dispatch*)evdev->dispatch;
+
+	if (mode == buttonset->sendevents.current_mode)
+		return LIBINPUT_CONFIG_STATUS_SUCCESS;
+
+	switch(mode) {
+	case LIBINPUT_CONFIG_SEND_EVENTS_ENABLED:
+		break;
+	case LIBINPUT_CONFIG_SEND_EVENTS_DISABLED:
+		buttonset_suspend(evdev->dispatch, evdev);
+		break;
+	default:
+		return LIBINPUT_CONFIG_STATUS_UNSUPPORTED;
+	}
+
+	buttonset->sendevents.current_mode = mode;
+
+	return LIBINPUT_CONFIG_STATUS_SUCCESS;
+}
+
+static enum libinput_config_send_events_mode
+bs_sendevents_get_mode(struct libinput_device *device)
+{
+	struct evdev_device *evdev = (struct evdev_device*)device;
+	struct buttonset_dispatch *dispatch =
+			(struct buttonset_dispatch*)evdev->dispatch;
+
+	return dispatch->sendevents.current_mode;
+}
+
+static enum libinput_config_send_events_mode
+bs_sendevents_get_default_mode(struct libinput_device *device)
+{
+	return LIBINPUT_CONFIG_SEND_EVENTS_ENABLED;
+}
+
 struct evdev_dispatch *
 evdev_buttonset_create(struct evdev_device *device)
 {
@@ -558,6 +606,13 @@ evdev_buttonset_create(struct evdev_device *device)
 		buttonset_destroy(&buttonset->base);
 		return NULL;
 	}
+
+	device->base.config.sendevents = &buttonset->sendevents.config;
+	buttonset->sendevents.current_mode = LIBINPUT_CONFIG_SEND_EVENTS_ENABLED;
+	buttonset->sendevents.config.get_modes = bs_sendevents_get_modes;
+	buttonset->sendevents.config.set_mode = bs_sendevents_set_mode;
+	buttonset->sendevents.config.get_mode = bs_sendevents_get_mode;
+	buttonset->sendevents.config.get_default_mode = bs_sendevents_get_default_mode;
 
 	return &buttonset->base;
 }
