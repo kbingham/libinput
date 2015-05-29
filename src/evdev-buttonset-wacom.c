@@ -523,7 +523,7 @@ buttonset_init(struct buttonset_dispatch *buttonset,
 
 	/* We intentionally skip X/Y/Z, they're dead on most wacom pads and
 	   the 27QHD sends accelerometer data through those three */
-	for (code = ABS_RZ; code <= ABS_MAX; code++) {
+	for (code = ABS_RX; code <= ABS_MAX; code++) {
 		buttonset->evcode_map[code] = -1;
 
 		if (!libevdev_has_event_code(device->evdev, EV_ABS, code))
