@@ -197,7 +197,7 @@ buttonset_check_notify_axes(struct buttonset_dispatch *buttonset,
 	unsigned int a;
 	unsigned int code;
 
-	for (a = 0; a <= buttonset->naxes; a++) {
+	for (a = 0; a < buttonset->naxes; a++) {
 		const struct input_absinfo *absinfo;
 
 		if (!bit_is_set(buttonset->changed_axes, a))
