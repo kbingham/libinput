@@ -713,8 +713,12 @@ libinput_event_gesture_get_dx(struct libinput_event_gesture *event)
 	require_event_type(libinput_event_get_context(&event->base),
 			   event->base.type,
 			   0.0,
+			   LIBINPUT_EVENT_GESTURE_PINCH_START,
 			   LIBINPUT_EVENT_GESTURE_PINCH_UPDATE,
-			   LIBINPUT_EVENT_GESTURE_SWIPE_UPDATE);
+			   LIBINPUT_EVENT_GESTURE_PINCH_END,
+			   LIBINPUT_EVENT_GESTURE_SWIPE_START,
+			   LIBINPUT_EVENT_GESTURE_SWIPE_UPDATE,
+			   LIBINPUT_EVENT_GESTURE_SWIPE_END);
 
 	return event->delta.x;
 }
@@ -725,8 +729,12 @@ libinput_event_gesture_get_dy(struct libinput_event_gesture *event)
 	require_event_type(libinput_event_get_context(&event->base),
 			   event->base.type,
 			   0.0,
+			   LIBINPUT_EVENT_GESTURE_PINCH_START,
 			   LIBINPUT_EVENT_GESTURE_PINCH_UPDATE,
-			   LIBINPUT_EVENT_GESTURE_SWIPE_UPDATE);
+			   LIBINPUT_EVENT_GESTURE_PINCH_END,
+			   LIBINPUT_EVENT_GESTURE_SWIPE_START,
+			   LIBINPUT_EVENT_GESTURE_SWIPE_UPDATE,
+			   LIBINPUT_EVENT_GESTURE_SWIPE_END);
 
 	return event->delta.y;
 }
@@ -738,8 +746,12 @@ libinput_event_gesture_get_dx_unaccelerated(
 	require_event_type(libinput_event_get_context(&event->base),
 			   event->base.type,
 			   0.0,
+			   LIBINPUT_EVENT_GESTURE_PINCH_START,
 			   LIBINPUT_EVENT_GESTURE_PINCH_UPDATE,
-			   LIBINPUT_EVENT_GESTURE_SWIPE_UPDATE);
+			   LIBINPUT_EVENT_GESTURE_PINCH_END,
+			   LIBINPUT_EVENT_GESTURE_SWIPE_START,
+			   LIBINPUT_EVENT_GESTURE_SWIPE_UPDATE,
+			   LIBINPUT_EVENT_GESTURE_SWIPE_END);
 
 	return event->delta_unaccel.x;
 }
@@ -751,8 +763,12 @@ libinput_event_gesture_get_dy_unaccelerated(
 	require_event_type(libinput_event_get_context(&event->base),
 			   event->base.type,
 			   0.0,
+			   LIBINPUT_EVENT_GESTURE_PINCH_START,
 			   LIBINPUT_EVENT_GESTURE_PINCH_UPDATE,
-			   LIBINPUT_EVENT_GESTURE_SWIPE_UPDATE);
+			   LIBINPUT_EVENT_GESTURE_PINCH_END,
+			   LIBINPUT_EVENT_GESTURE_SWIPE_START,
+			   LIBINPUT_EVENT_GESTURE_SWIPE_UPDATE,
+			   LIBINPUT_EVENT_GESTURE_SWIPE_END);
 
 	return event->delta_unaccel.y;
 }
@@ -776,7 +792,9 @@ libinput_event_gesture_get_angle(struct libinput_event_gesture *event)
 	require_event_type(libinput_event_get_context(&event->base),
 			   event->base.type,
 			   0.0,
-			   LIBINPUT_EVENT_GESTURE_PINCH_UPDATE);
+			   LIBINPUT_EVENT_GESTURE_PINCH_START,
+			   LIBINPUT_EVENT_GESTURE_PINCH_UPDATE,
+			   LIBINPUT_EVENT_GESTURE_PINCH_END);
 
 	return event->angle;
 }
