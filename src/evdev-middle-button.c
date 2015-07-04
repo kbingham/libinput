@@ -497,7 +497,7 @@ evdev_middlebutton_handle_event(struct evdev_device *device,
 				uint64_t time,
 				enum evdev_middlebutton_event event)
 {
-	int rc;
+	int rc = 0;
 	enum evdev_middlebutton_state current;
 
 	current = device->middlebutton.state;
