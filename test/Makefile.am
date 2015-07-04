@@ -66,6 +66,7 @@ run_tests = \
 	test-log \
 	test-misc \
 	test-keyboard \
+	test-keyboard-halfkey \
 	test-litest-selftest
 
 build_tests = \
@@ -123,6 +124,10 @@ test_misc_LDFLAGS = -no-install
 test_keyboard_SOURCES = keyboard.c
 test_keyboard_LDADD = $(TEST_LIBS)
 test_keyboard_LDFLAGS = -no-install
+
+test_keyboard_halfkey_SOURCES = keyboard-halfkey.c
+test_keyboard_halfkey_LDADD = $(TEST_LIBS)
+test_keyboard_halfkey_LDFLAGS = -no-install
 
 test_device_SOURCES = device.c
 test_device_LDADD = $(TEST_LIBS)
