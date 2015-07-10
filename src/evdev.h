@@ -93,6 +93,26 @@ enum evdev_middlebutton_event {
 	MIDDLEBUTTON_EVENT_ALL_UP,
 };
 
+enum evdev_halfkey_state {
+	HALFKEY_SPACE_IDLE,
+	HALFKEY_SPACE_PRESSED,
+	HALFKEY_SPACE_MODIFIED,
+};
+
+enum evdev_halfkey_event {
+	HALFKEY_SPACE_DOWN,
+	HALFKEY_SPACE_UP,
+	HALFKEY_MIRROR_DOWN,
+	HALFKEY_MIRROR_UP,
+	HALFKEY_OTHERKEY,
+};
+
+enum evdev_halfkey_action {
+	HALFKEY_PASSTHROUGH,
+	HALFKEY_DISCARD,
+	HALFKEY_INJECTMIRROR,
+};
+
 enum evdev_device_model {
 	EVDEV_MODEL_DEFAULT = 0,
 	EVDEV_MODEL_LENOVO_X230 = (1 << 0),
@@ -217,6 +237,13 @@ struct evdev_device {
 		uint32_t button_mask;
 		uint64_t first_event_time;
 	} middlebutton;
+
+	struct {
+		bool enabled;
+		enum evdev_halfkey_state state;
+		/* Bitmask of pressed keys whose state is modified by us. */
+		unsigned long keymask[NLONGS(KEY_CNT)];
+	} halfkey;
 
 	int dpi; /* HW resolution */
 	struct ratelimit syn_drop_limit; /* ratelimit for SYN_DROPPED logging */
@@ -393,6 +420,12 @@ evdev_device_remove(struct evdev_device *device);
 
 void
 evdev_device_destroy(struct evdev_device *device);
+
+enum evdev_halfkey_action
+evdev_halfkey_filter_key(struct evdev_device *device,
+			 uint64_t time,
+			 int keycode,
+			 enum libinput_key_state state);
 
 bool
 evdev_middlebutton_filter_button(struct evdev_device *device,

@@ -527,6 +527,15 @@ evdev_process_key(struct evdev_device *device,
 
 	hw_set_key_down(device, e->code, e->value);
 
+	/* Filter for Halfkey mirroring after hardware checks */
+	if (evdev_halfkey_filter_key(device,
+		time,
+		e->code,
+		e->value ? LIBINPUT_KEY_STATE_PRESSED :
+			   LIBINPUT_KEY_STATE_RELEASED)
+		!= HALFKEY_PASSTHROUGH)
+		return;
+
 	switch (type) {
 	case EVDEV_KEY_TYPE_NONE:
 		break;
