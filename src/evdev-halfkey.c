@@ -377,6 +377,12 @@ evdev_halfkey_filter_key(struct evdev_device *device,
 		action = HALFKEY_INJECTMIRROR;
 	}
 
+	log_bug_libinput(device->base.seat->libinput,
+			 "Key %s %s. would be mirrored as %s\n",
+				is_press ? "Pressed" : "Released",
+				libevdev_event_code_get_name(EV_KEY, keycode),
+				libevdev_event_code_get_name(EV_KEY, mirrored_key));
+
 	if (action == HALFKEY_INJECTMIRROR)
 	{
 		halfkey_set_key_down(device, mirrored_key, is_press);
