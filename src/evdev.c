@@ -1272,6 +1272,9 @@ fallback_dispatch_create(struct libinput_device *device)
 					want_config);
 	}
 
+	/* Halfkey support is disabled by default */
+	evdev_init_halfkey(evdev_device, false, true);
+
 	return dispatch;
 }
 
@@ -2603,6 +2606,7 @@ evdev_device_resume(struct evdev_device *device)
 	}
 
 	memset(device->hw_key_mask, 0, sizeof(device->hw_key_mask));
+	memset(device->halfkey.keymask, 0, sizeof(device->halfkey.keymask));
 
 	evdev_notify_resumed_device(device);
 

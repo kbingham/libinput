@@ -207,6 +207,17 @@ struct libinput_device_config_dwt {
 			 struct libinput_device *device);
 };
 
+struct libinput_device_config_halfkey {
+	int (*available)(struct libinput_device *device);
+	enum libinput_config_status (*set)(
+			 struct libinput_device *device,
+			 enum libinput_config_halfkey_state);
+	enum libinput_config_halfkey_state (*get)(
+			 struct libinput_device *device);
+	enum libinput_config_halfkey_state (*get_default)(
+			 struct libinput_device *device);
+};
+
 struct libinput_device_config {
 	struct libinput_device_config_tap *tap;
 	struct libinput_device_config_calibration *calibration;
@@ -218,6 +229,7 @@ struct libinput_device_config {
 	struct libinput_device_config_click_method *click_method;
 	struct libinput_device_config_middle_emulation *middle_emulation;
 	struct libinput_device_config_dwt *dwt;
+	struct libinput_device_config_halfkey *halfkey;
 };
 
 struct libinput_device_group {

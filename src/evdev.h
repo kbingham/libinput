@@ -239,7 +239,11 @@ struct evdev_device {
 	} middlebutton;
 
 	struct {
+		struct libinput_device_config_halfkey config;
+
 		bool enabled;
+		bool enabled_default;
+		bool want_enabled;
 		enum evdev_halfkey_state state;
 		/* Bitmask of pressed keys whose state is modified by us. */
 		unsigned long keymask[NLONGS(KEY_CNT)];
@@ -426,6 +430,11 @@ evdev_halfkey_filter_key(struct evdev_device *device,
 			 uint64_t time,
 			 int keycode,
 			 enum libinput_key_state state);
+
+void
+evdev_init_halfkey(struct evdev_device *device,
+		   bool enabled,
+		   bool want_config);
 
 bool
 evdev_middlebutton_filter_button(struct evdev_device *device,

@@ -3168,6 +3168,124 @@ libinput_device_config_dwt_get_enabled(struct libinput_device *device);
 enum libinput_config_dwt_state
 libinput_device_config_dwt_get_default_enabled(struct libinput_device *device);
 
+/**
+ * @ingroup config
+ */
+enum libinput_config_halfkey_state {
+	/**
+	 * Halfkey accessibility support is to be disabled, or
+	 * is currently disabled.
+	 */
+	LIBINPUT_CONFIG_HALFKEY_DISABLED,
+	/**
+	 * Halfkey accessibility support is to be enabled, or
+	 * is currently enabled.
+	 */
+	LIBINPUT_CONFIG_HALFKEY_ENABLED,
+};
+
+/**
+ * @ingroup config
+ *
+ * Check if halfkey keyboard accessiblity configuration is available on this
+ * device. See libinput_device_config_halfkey_set_enabled() for
+ * details.
+ *
+ * @param device The device to query
+ *
+ * @note Some devices such as specific accessibility keyboards, or alternate
+ * key input devices may wish to prevent this option from being enabled.
+ * For instance, they already support halfkey accessibility in hardware.
+ *
+ * @return Non-zero if halfkey accessiblity support is available and can be
+ * configured, zero otherwise.
+ *
+ * @see libinput_device_config_halfkey_set_enabled
+ * @see libinput_device_config_halfkey_get_enabled
+ * @see libinput_device_config_halfkey_get_default_enabled
+ */
+int
+libinput_device_config_halfkey_is_available(
+		struct libinput_device *device);
+
+/**
+ * @ingroup config
+ *
+ * Enable or disable halfkey accessiblity support on this device. When enabled,
+ * pressing the space bar simultaneously with an enabled key reflects down the
+ * TGB\YHN line of the keyboard. This has the result of being able to touch type
+ * with only a single hand, with either left or right handed use supported.
+ *
+ * Only specific keys on the numberline, and the main alpha keys are mirrored,
+ * along with Tab and CapsLock being mirrored by Backspace and Enter for
+ * convenience.
+ *
+ * @param device The device to configure
+ * @param enable @ref LIBINPUT_CONFIG_HALFKEY_DISABLED to
+ * disable, @ref LIBINPUT_CONFIG_HALFKEY_ENABLED To enable
+ * halfkey accessibilty support.
+ *
+ * @return A config status code. Disabling halfkey emulation support on a
+ * device that does not support halfkey accessiblity always succeeds.
+ *
+ * @see libinput_device_config_halfkey_is_available
+ * @see libinput_device_config_halfkey_get_enabled
+ * @see libinput_device_config_halfkey_get_default_enabled
+ */
+enum libinput_config_status
+libinput_device_config_halfkey_set_enabled(
+		struct libinput_device *device,
+		enum libinput_config_halfkey_state enable);
+
+/**
+ * @ingroup config
+ *
+ * Check if configurable halfkey accessibility is enabled on this device.
+ * If the device does not have configurable halfkey accessibilty, this
+ * function returns @ref LIBINPUT_CONFIG_HALFKEY_DISABLED.
+ *
+ * @note Some devices may provide halfkey accessibility but do not allow
+ * enabling/disabling that emulation. These devices always return @ref
+ * LIBINPUT_CONFIG_MIDDLE_EMULATION_DISABLED.
+ *
+ * @param device The device to configure
+ * @return @ref LIBINPUT_CONFIG_HALFKEY_DISABLED if disabled
+ * or not available/configurable, @ref
+ * LIBINPUT_CONFIG_HALFKEY_ENABLED If enabled.
+ *
+ * @see libinput_device_config_halfkey_is_available
+ * @see libinput_device_config_halfkey_set_enabled
+ * @see libinput_device_config_halfkey_get_default_enabled
+ */
+enum libinput_config_halfkey_state
+libinput_device_config_halfkey_get_enabled(
+		struct libinput_device *device);
+
+/**
+ * @ingroup config
+ *
+ * Check if configurable halfkey accessibility support is enabled by default on
+ * this device. If the device does not have configurable halfkey support,
+ * this function returns @ref
+ * LIBINPUT_CONFIG_HALFKEY_DISABLED.
+ *
+ * @note Some devices provide halfkey accessibility support but do not allow
+ * enabling/disabling that support. These devices always return @ref
+ * LIBINPUT_CONFIG_HALFKEY_DISABLED.
+ *
+ * @param device The device to configure
+ * @return @ref LIBINPUT_CONFIG_HALFKEY_DISABLED If disabled
+ * or not available, @ref LIBINPUT_CONFIG_HALFKEY_ENABLED if
+ * enabled.
+ *
+ * @see libinput_device_config_halfkey_is_available
+ * @see libinput_device_config_halfkey_set_enabled
+ * @see libinput_device_config_halfkey_get_enabled
+ */
+enum libinput_config_halfkey_state
+libinput_device_config_halfkey_get_default_enabled(
+		struct libinput_device *device);
+
 #ifdef __cplusplus
 }
 #endif

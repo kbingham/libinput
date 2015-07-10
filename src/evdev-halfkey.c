@@ -347,3 +347,89 @@ evdev_halfkey_filter_key(struct evdev_device *device,
 
 	return action;
 }
+
+static inline void
+evdev_halfkey_apply_config(struct evdev_device *device)
+{
+	if (device->halfkey.want_enabled ==
+	    device->halfkey.enabled)
+		return;
+
+	for (unsigned i = 0; i < NLONGS(KEY_CNT); i++)
+		if (device->halfkey.keymask[i] != 0) {
+			log_bug_libinput(device->base.seat->libinput,
+				"halfkey: Keymask set. Config not applied\n");
+			return;
+		}
+
+	device->halfkey.enabled = device->halfkey.want_enabled;
+}
+
+static int
+evdev_halfkey_is_available(struct libinput_device *device)
+{
+	return 1;
+}
+
+static enum libinput_config_status
+evdev_halfkey_set(struct libinput_device *device,
+		  enum libinput_config_halfkey_state enable)
+{
+	struct evdev_device *evdev = (struct evdev_device*)device;
+
+	switch (enable) {
+	case LIBINPUT_CONFIG_HALFKEY_ENABLED:
+		evdev->halfkey.want_enabled = true;
+		break;
+	case LIBINPUT_CONFIG_HALFKEY_DISABLED:
+		evdev->halfkey.want_enabled = false;
+		break;
+	default:
+		return LIBINPUT_CONFIG_STATUS_INVALID;
+	}
+
+	evdev_halfkey_apply_config(evdev);
+
+	return LIBINPUT_CONFIG_STATUS_SUCCESS;
+}
+
+static enum libinput_config_halfkey_state
+evdev_halfkey_get(struct libinput_device *device)
+{
+	struct evdev_device *evdev = (struct evdev_device*)device;
+
+	return evdev->halfkey.enabled ?
+			LIBINPUT_CONFIG_HALFKEY_ENABLED :
+			LIBINPUT_CONFIG_HALFKEY_DISABLED;
+}
+
+static enum libinput_config_halfkey_state
+evdev_halfkey_get_default(struct libinput_device *device)
+{
+	struct evdev_device *evdev = (struct evdev_device*)device;
+
+	return evdev->halfkey.enabled_default ?
+			LIBINPUT_CONFIG_HALFKEY_ENABLED :
+			LIBINPUT_CONFIG_HALFKEY_DISABLED;
+}
+
+void
+evdev_init_halfkey(struct evdev_device *device,
+		   bool enable,
+		   bool want_config)
+{
+	memset(device->halfkey.keymask, 0, sizeof(device->halfkey.keymask));
+
+	device->halfkey.enabled_default = enable;
+	device->halfkey.want_enabled = enable;
+	device->halfkey.enabled = enable;
+
+	if (!want_config)
+		return;
+
+	device->halfkey.config.available = evdev_halfkey_is_available;
+	device->halfkey.config.set = evdev_halfkey_set;
+	device->halfkey.config.get = evdev_halfkey_get;
+	device->halfkey.config.get_default = evdev_halfkey_get_default;
+	device->base.config.halfkey = &device->halfkey.config;
+}
