@@ -90,6 +90,21 @@ halfkey_is_key_down(struct evdev_device *device, int code)
 	return long_bit_is_set(device->halfkey.keymask, code);
 }
 
+static void
+halfkey_debug_line(struct evdev_device *device)
+{
+	char keys_down[1024] = "";
+	char * ptr = keys_down;
+
+	for (unsigned i = 0; i < KEY_CNT; ++i)
+		if (halfkey_is_key_down(device, i))
+			ptr += sprintf(ptr, "%s ",
+				libevdev_event_code_get_name(EV_KEY, i));
+
+	log_bug_libinput(device->base.seat->libinput,
+		"State: %s : Keys Down %s\n",
+		 halfkey_state_to_str(device->halfkey.state), keys_down);
+}
 
 static int
 halfkey_mirror_key(int keycode)
@@ -394,6 +409,8 @@ evdev_halfkey_filter_key(struct evdev_device *device,
 				libevdev_event_code_get_name(EV_KEY, keycode),
 				libevdev_event_code_get_name(EV_KEY, mirrored_key));
 	}
+
+	halfkey_debug_line(device);
 
 	/* PASSTHROUGH, and DISCARD will be handled by evdev */
 
