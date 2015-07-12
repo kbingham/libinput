@@ -337,6 +337,26 @@ evdev_halfkey_filter_key(struct evdev_device *device,
 
 	action = evdev_halfkey_handle_event(device, time, event);
 
+	/*
+	 * If key pressed was a mirror, but then the space is released,
+	 * the system will try to 'up' a key which is already up.
+	 * We catch this here, and 'up' the mirror which we have put down.
+	 */
+	if (!is_press &&
+	    action != HALFKEY_INJECTMIRROR &&
+	    halfkey_is_key_down(device, keycode) == LIBINPUT_KEY_STATE_RELEASED &&
+	    halfkey_is_key_down(device, mirrored_key) == LIBINPUT_KEY_STATE_PRESSED) {
+		log_bug_libinput(device->base.seat->libinput,
+			"State Inversion. %s is already %s. "
+			"Using %s instead\n",
+			libevdev_event_code_get_name(EV_KEY, keycode),
+			is_press ? "pressed" : "released",
+			libevdev_event_code_get_name(EV_KEY, mirrored_key));
+
+		/* Inject the mirrored release code instead */
+		action = HALFKEY_INJECTMIRROR;
+	}
+
 	if (action == HALFKEY_INJECTMIRROR)
 	{
 		halfkey_set_key_down(device, mirrored_key, is_press);
