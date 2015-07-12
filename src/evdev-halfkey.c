@@ -307,6 +307,13 @@ evdev_halfkey_handle_event(struct evdev_device *device,
 	if (device->halfkey.state != current)
 		evdev_halfkey_handle_state_change(device);
 
+	log_debug(device->base.seat->libinput,
+		  "halfkeystate: %s → %s → %s, action %s\n",
+		  halfkey_state_to_str(current),
+		  halfkey_event_to_str(event),
+		  halfkey_state_to_str(device->halfkey.state),
+		  halfkey_action_to_str(action));
+
 	return action;
 }
 
@@ -374,6 +381,12 @@ evdev_halfkey_filter_key(struct evdev_device *device,
 	{
 		halfkey_set_key_down(device, mirrored_key, is_press);
 		evdev_keyboard_notify_key(device, time, mirrored_key, is_press);
+
+		log_bug_libinput(device->base.seat->libinput,
+			 "Key %s %s. Consumed by Halfkey as %s\n",
+				is_press ? "Pressed" : "Released",
+				libevdev_event_code_get_name(EV_KEY, keycode),
+				libevdev_event_code_get_name(EV_KEY, mirrored_key));
 	}
 
 	/* PASSTHROUGH, and DISCARD will be handled by evdev */
