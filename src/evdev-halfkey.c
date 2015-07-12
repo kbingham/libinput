@@ -346,6 +346,25 @@ evdev_halfkey_filter_key(struct evdev_device *device,
 	int mirrored_key;
 	bool mirrored;
 
+	/* KPENTER is FN and ENTER key */
+	if (keycode == KEY_KPENTER) {
+		if (is_press) {
+
+			device->halfkey.enabled = !device->halfkey.enabled;
+			log_bug_libinput(device->base.seat->libinput,
+				 "Key %s Pressed. Halfkey now %s\n",
+				 libevdev_event_code_get_name(EV_KEY, keycode),
+				 device->halfkey.enabled ? "Enabled" :
+				 			   "Disabled");
+		}
+
+		/* Reinitialise State Machine */
+		device->halfkey.state = HALFKEY_SPACE_IDLE;
+
+		/* Swallow both up and down for this key */
+		return HALFKEY_DISCARD;
+	}
+
 	/* Don't do any more work than necessary if we are disabled */
 	if (!device->halfkey.enabled)
 		return HALFKEY_PASSTHROUGH;
