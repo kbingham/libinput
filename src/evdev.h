@@ -245,6 +245,8 @@ struct evdev_device {
 		bool enabled_default;
 		bool want_enabled;
 		enum evdev_halfkey_state state;
+		/* If we have a modifier queued, we store its time */
+		uint64_t modifier_queued;
 		/* Bitmask of pressed keys whose state is modified by us. */
 		unsigned long keymask[NLONGS(KEY_CNT)];
 	} halfkey;

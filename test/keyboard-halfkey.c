@@ -162,6 +162,36 @@ START_TEST(halfkey_test_mixed_space)
 }
 END_TEST
 
+START_TEST(halfkey_test_mixed_nonmirrored_key)
+{
+	struct keys input[] = {
+		/* The sequence that caught me out gitk --all : gitk- -all */
+		{ KEY_SPACE, LIBINPUT_KEY_STATE_PRESSED },
+		{ KEY_MINUS, LIBINPUT_KEY_STATE_PRESSED },
+		{ KEY_SPACE, LIBINPUT_KEY_STATE_RELEASED },
+		{ KEY_MINUS, LIBINPUT_KEY_STATE_RELEASED },
+
+		/* An extra variation check */
+		{ KEY_SPACE, LIBINPUT_KEY_STATE_PRESSED },
+		{ KEY_MINUS, LIBINPUT_KEY_STATE_PRESSED },
+		{ KEY_MINUS, LIBINPUT_KEY_STATE_RELEASED },
+		{ KEY_SPACE, LIBINPUT_KEY_STATE_RELEASED },
+
+		/* And more complicated */
+		{ KEY_SPACE, LIBINPUT_KEY_STATE_PRESSED },
+		{ KEY_MINUS, LIBINPUT_KEY_STATE_PRESSED },
+		{ KEY_MINUS, LIBINPUT_KEY_STATE_RELEASED },
+		{ KEY_MINUS, LIBINPUT_KEY_STATE_PRESSED },
+		{ KEY_SPACE, LIBINPUT_KEY_STATE_RELEASED },
+		{ KEY_MINUS, LIBINPUT_KEY_STATE_RELEASED },
+	};
+
+	/* In this sequence we expect exactly what we put in to come out */
+	halfkey_test_sequence(input, ARRAY_LENGTH(input),
+			      input, ARRAY_LENGTH(input));
+}
+END_TEST
+
 START_TEST(halfkey_test_mirrored_key)
 {
 	/* The Space press and release should be consumed
@@ -260,6 +290,7 @@ litest_setup_tests(void)
 {
 	litest_add("keyboard:halfkey", halfkey_default_enabled, LITEST_KEYS, LITEST_ANY);
 	litest_add_for_device("keyboard:halfkey", halfkey_test_keypress, LITEST_KEYBOARD);
+	litest_add_for_device("keyboard:halfkey", halfkey_test_mixed_nonmirrored_key, LITEST_KEYBOARD);
 	litest_add_for_device("keyboard:halfkey", halfkey_test_mixed_space, LITEST_KEYBOARD);
 	litest_add_for_device("keyboard:halfkey", halfkey_test_mirrored_key, LITEST_KEYBOARD);
 	litest_add_for_device("keyboard:halfkey", halfkey_test_mirrored_sequence, LITEST_KEYBOARD);

@@ -168,20 +168,12 @@ evdev_halfkey_idle_handle_event(struct evdev_device *device,
 	switch(event) {
 	case HALFKEY_SPACE_DOWN:
 		device->halfkey.state = HALFKEY_SPACE_PRESSED;
+		device->halfkey.modifier_queued = time;
 
 		/* Change state but swallow the Space Input Event */
 		action = HALFKEY_DISCARD;
 		break;
 	case HALFKEY_SPACE_UP:
-		/* This shouldn't occur, */
-		halfkey_state_error(device, event);
-		/*
-		 * The only way this could occur is if the space down
-		 * event occured before we were running. In which case the only
-		 * reasonable thing we can do is pass on this SPACE_UP
-		 */
-		action = HALFKEY_PASSTHROUGH;
-		break;
 	case HALFKEY_MIRROR_DOWN:
 	case HALFKEY_MIRROR_UP:
 		/* Mirrored keys are passed through in idle state */
@@ -206,14 +198,10 @@ evdev_halfkey_spacepressed_handle_event(struct evdev_device *device,
 		halfkey_state_error(device, event);
 		action = HALFKEY_DISCARD;
 		break;
+	case HALFKEY_OTHERKEY:
 	case HALFKEY_SPACE_UP:
 		device->halfkey.state = HALFKEY_SPACE_IDLE;
-
-		/* We have discarded the relevant SPACE_DOWN
-		   We need to fake one now */
-		evdev_keyboard_notify_key(device, time, KEY_SPACE, 1);
-
-		/* Allow evdev to inject the SPACE_UP */
+		/* Allow evdev to inject the SPACE_UP or Other key event */
 		action = HALFKEY_PASSTHROUGH;
 		break;
 	case HALFKEY_MIRROR_DOWN:
@@ -228,11 +216,6 @@ evdev_halfkey_spacepressed_handle_event(struct evdev_device *device,
 		 * pressed before the space key. Therefore we just let this
 		 * one passthrough without changing state
 		 */
-		action = HALFKEY_PASSTHROUGH;
-		break;
-	case HALFKEY_OTHERKEY:
-		/* Maintain current state but allow this event
-		   to be sent through evdev as normal */
 		action = HALFKEY_PASSTHROUGH;
 		break;
 	}
@@ -272,6 +255,33 @@ evdev_halfkey_modified_handle_event(struct evdev_device *device,
 	return action;
 }
 
+static void
+evdev_halfkey_handle_state_change(struct evdev_device *device)
+{
+	enum evdev_halfkey_state new_state = device->halfkey.state;
+	switch (new_state) {
+	case HALFKEY_SPACE_IDLE:
+		/* Dispatch any queued modifier down actions */
+		if (device->halfkey.modifier_queued) {
+			uint64_t time = device->halfkey.modifier_queued;
+
+			device->halfkey.modifier_queued = 0;
+
+			evdev_keyboard_notify_key(device,
+						  time,
+						  KEY_SPACE,
+						  1);
+		}
+		break;
+	case HALFKEY_SPACE_PRESSED:
+		break;
+	case HALFKEY_SPACE_MODIFIED:
+		/* Discard any queued modifier down */
+		device->halfkey.modifier_queued = 0;
+		break;
+	}
+}
+
 static enum evdev_halfkey_action
 evdev_halfkey_handle_event(struct evdev_device *device,
 			   uint64_t time,
@@ -293,6 +303,9 @@ evdev_halfkey_handle_event(struct evdev_device *device,
 		action = evdev_halfkey_modified_handle_event(device, time, event);
 		break;
 	}
+
+	if (device->halfkey.state != current)
+		evdev_halfkey_handle_state_change(device);
 
 	return action;
 }
@@ -443,6 +456,7 @@ evdev_init_halfkey(struct evdev_device *device,
 	device->halfkey.enabled_default = enable;
 	device->halfkey.want_enabled = enable;
 	device->halfkey.enabled = enable;
+	device->halfkey.modifier_queued = 0;
 
 	if (!want_config)
 		return;
