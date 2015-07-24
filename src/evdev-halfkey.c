@@ -155,22 +155,22 @@ halfkey_mirror_key(int keycode)
     /*
      * SPACE State Table
      *
-     * 			IDLE		PRESSED		MODIFIED
+     * Event \ \ State	IDLE		PRESSED		MODIFIED	RELEASE
      *
-     * SpaceDown	Discarded	Discarded	Discarded
-     * 			-> PRESSED	-> PRESSED	-> MODIFIED
+     * SpaceDown	Queued		Discarded	Invalid 	Queued
+     * 			-> PRESSED	-> PRESSED	-> MODIFIED 	-> PRESSED
      *
-     * SpaceUp		Passthrough	InjectSpace	Discarded
-     * 			-> IDLE		-> IDLE		-> IDLE
+     * SpaceUp		Passthrough	SpaceDown/Pass	Discard		Invalid
+     * 			-> IDLE		-> IDLE		-> RELEASE	-> RELEASE
      *
-     * MirroredDown	Passthrough	InjectMirror	InjectMirror
-     * 			-> IDLE		-> MODIFIED	-> MODIFIED
+     * MirroredDown	Passthrough	InjectMirror	InjectMirror	Passthrough
+     * 			-> IDLE		-> MODIFIED	-> MODIFIED	-> RELEASE
      *
-     * MirroredUp	Passthrough	Passthrough	InjectMirror
-     * 			-> IDLE		-> PRESSED	-> MODIFIED
+     * MirroredUp	Passthrough	Passthrough	InjectMirror	CheckMirror
+     * 			-> IDLE		-> PRESSED	-> MODIFIED	-> RELEASE/IDLE
      *
-     * OtherKey		Passthrough	Passthrough	Passthrough
-     * 			-> IDLE		-> PRESSED	-> MODIFIED
+     * OtherKey		Passthrough	SpaceDown/Pass	Passthrough	Passthrough
+     * 			-> IDLE		-> IDLE 	-> MODIFIED	-> RELEASE
      */
 
 static enum evdev_halfkey_action
